@@ -5,6 +5,9 @@ const path = require('path');
 const WebSocket = require('ws');
 const http = require('http');
 const fs = require('fs');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
 const app = express();
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
@@ -361,6 +364,105 @@ app.get('/api/events', async (req, res) => {
 
   } catch (error) {
     console.error('Error setting up Docker events stream:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Docker Compose endpoints
+// List compose projects
+app.get('/api/compose/projects', async (req, res) => {
+  try {
+    const { stdout, stderr } = await execPromise('docker compose ls --format json 2>&1');
+
+    // Check if the output looks like JSON
+    if (!stdout.trim() || stdout.trim().startsWith('<') || stdout.trim().startsWith('Error')) {
+      // No projects or error from docker compose
+      return res.json([]);
+    }
+
+    const projects = JSON.parse(stdout);
+    res.json(Array.isArray(projects) ? projects : [projects]);
+  } catch (error) {
+    // If docker compose command fails, return empty array instead of error
+    console.error('Docker compose error:', error.message);
+    res.json([]);
+  }
+});
+
+// Get compose project services
+app.get('/api/compose/:project/services', async (req, res) => {
+  try {
+    const { project } = req.params;
+    const { stdout } = await execPromise(`docker compose -p ${project} ps --format json`);
+    const services = stdout.trim().split('\n').filter(line => line).map(line => JSON.parse(line));
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Start compose project
+app.post('/api/compose/:project/start', async (req, res) => {
+  try {
+    const { project } = req.params;
+    await execPromise(`docker compose -p ${project} start`);
+    res.json({ success: true, message: 'Compose project started' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stop compose project
+app.post('/api/compose/:project/stop', async (req, res) => {
+  try {
+    const { project } = req.params;
+    await execPromise(`docker compose -p ${project} stop`);
+    res.json({ success: true, message: 'Compose project stopped' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Restart compose project
+app.post('/api/compose/:project/restart', async (req, res) => {
+  try {
+    const { project } = req.params;
+    await execPromise(`docker compose -p ${project} restart`);
+    res.json({ success: true, message: 'Compose project restarted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Down compose project (stop and remove)
+app.post('/api/compose/:project/down', async (req, res) => {
+  try {
+    const { project } = req.params;
+    await execPromise(`docker compose -p ${project} down`);
+    res.json({ success: true, message: 'Compose project removed' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get compose project logs
+app.get('/api/compose/:project/logs', async (req, res) => {
+  try {
+    const { project } = req.params;
+    const { stdout } = await execPromise(`docker compose -p ${project} logs --tail=100`);
+    res.json({ logs: stdout });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get compose file content
+app.get('/api/compose/:project/file', async (req, res) => {
+  try {
+    const { project } = req.params;
+    const { stdout } = await execPromise(`docker compose -p ${project} config`);
+    res.json({ content: stdout });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

@@ -4,6 +4,7 @@ import { Tabs } from './components/common/Tabs';
 import { Containers } from './components/containers/Containers';
 import { Images } from './components/images/Images';
 import { Volumes } from './components/volumes/Volumes';
+import { Compose } from './components/compose/Compose';
 import { LogsModal } from './components/modals/LogsModal';
 import { StatsModal } from './components/modals/StatsModal';
 import { CreateContainerModal } from './components/modals/CreateContainerModal';
@@ -163,7 +164,7 @@ function App() {
       <Header onRefresh={handleRefreshAll} />
 
       <Tabs
-        tabs={['Containers', 'Images', 'Volumes']}
+        tabs={['Containers', 'Images', 'Volumes', 'Compose']}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
@@ -196,6 +197,13 @@ function App() {
           onCreateVolume={handleCreateVolume}
           onInspect={handleInspectVolume}
           onRefresh={refreshSystemInfo}
+          showMessage={showMessage}
+          showConfirm={showConfirm}
+        />
+      )}
+
+      {activeTab === 'Compose' && (
+        <Compose
           showMessage={showMessage}
           showConfirm={showConfirm}
         />

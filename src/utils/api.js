@@ -126,6 +126,61 @@ export const api = {
     if (!response.ok) throw new Error('Failed to inspect volume');
     return response.json();
   },
+
+  // Compose
+  getComposeProjects: async () => {
+    const response = await fetch(`${API_URL}/compose/projects`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Failed to fetch compose projects');
+    return response.json();
+  },
+
+  getComposeServices: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/services`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Failed to fetch compose services');
+    return response.json();
+  },
+
+  startComposeProject: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/start`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to start compose project');
+    return response.json();
+  },
+
+  stopComposeProject: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/stop`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to stop compose project');
+    return response.json();
+  },
+
+  restartComposeProject: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/restart`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to restart compose project');
+    return response.json();
+  },
+
+  downComposeProject: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/down`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to remove compose project');
+    return response.json();
+  },
+
+  getComposeLogs: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/logs`);
+    if (!response.ok) throw new Error('Failed to fetch compose logs');
+    return response.json();
+  },
+
+  getComposeFile: async (project) => {
+    const response = await fetch(`${API_URL}/compose/${project}/file`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Failed to fetch compose file');
+    return response.json();
+  },
 };
 
 export const formatBytes = (bytes) => {

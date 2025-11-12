@@ -1006,3 +1006,190 @@ header h1 {
     margin-bottom: 25px;
     line-height: 1.5;
 }
+
+/* Compose Projects */
+.compose-projects {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+}
+
+.compose-project {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.compose-project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.compose-project-header:hover {
+    background: var(--hover-bg);
+}
+
+.compose-project-info {
+    flex: 1;
+}
+
+.compose-project-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.compose-project-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.compose-status {
+    font-weight: 500;
+}
+
+.compose-path {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.expand-icon {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.compose-project-details {
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.compose-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.compose-actions .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.compose-actions .btn-start {
+    background: #10b981;
+    color: white;
+}
+
+.compose-actions .btn-start:hover {
+    background: #059669;
+}
+
+.compose-actions .btn-stop {
+    background: #f59e0b;
+    color: white;
+}
+
+.compose-actions .btn-stop:hover {
+    background: #d97706;
+}
+
+.compose-actions .btn-restart {
+    background: #3b82f6;
+    color: white;
+}
+
+.compose-actions .btn-restart:hover {
+    background: #2563eb;
+}
+
+.compose-actions .btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.compose-actions .btn-danger:hover {
+    background: #dc2626;
+}
+
+.compose-services {
+    margin-top: 20px;
+}
+
+.compose-services h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+}
+
+.service-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.service-status .status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+/* Compose File Modal */
+.modal-content.compose-file-modal {
+    max-width: 900px;
+    width: 90%;
+}
+
+.compose-file-content {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 20px;
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.compose-file-modal .error-message {
+    color: #ef4444;
+    padding: 20px;
+    text-align: center;
+}
+
+.compose-file-modal .loading {
+    padding: 20px;
+    text-align: center;
+}
