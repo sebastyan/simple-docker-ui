@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardInfo, CardActions, InfoRow } from '../common/Card';
 import { Button } from '../common/Button';
+import { truncate } from '../../utils/text';
 
 export const VolumeCard = ({ volume, onInspect, onRemove }) => {
   const name = volume.Name;
@@ -10,11 +11,11 @@ export const VolumeCard = ({ volume, onInspect, onRemove }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{name}</CardTitle>
+        <CardTitle>{truncate(name, 40)}</CardTitle>
       </CardHeader>
       <CardInfo>
         <InfoRow label="Driver" value={driver} />
-        <InfoRow label="Mountpoint" value={mountpoint} />
+        <InfoRow label="Mountpoint" value={truncate(mountpoint, 60)} />
         <InfoRow label="Created" value={created} />
       </CardInfo>
       <CardActions>

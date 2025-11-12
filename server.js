@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const WebSocket = require('ws');
 const http = require('http');
+const fs = require('fs');
 
 const app = express();
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
@@ -11,14 +12,24 @@ const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 app.use(cors());
 app.use(express.json());
 
-// Disable caching for development
-app.use(express.static('public', {
-  etag: false,
-  maxAge: 0,
-  setHeaders: (res) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  }
-}));
+// Serve static files from appropriate directory based on environment
+const isProduction = process.env.NODE_ENV === 'production';
+const distExists = fs.existsSync(path.join(__dirname, 'dist'));
+
+if (isProduction || distExists) {
+  // Production or dist exists: serve built files
+  const staticDir = distExists ? 'dist' : 'public';
+  app.use(express.static(staticDir, {
+    etag: isProduction,
+    maxAge: isProduction ? 86400000 : 0,
+  }));
+  console.log(`Serving static files from: ${staticDir}`);
+} else {
+  // Development: Only serve favicon, no frontend files
+  // Frontend should be served by Vite dev server on port 5173
+  app.use('/favicon.svg', express.static(path.join(__dirname, 'public', 'favicon.svg')));
+  console.log('Development mode: Frontend should run on Vite dev server (port 5173)');
+}
 
 // Containers endpoints
 app.get('/api/containers', async (req, res) => {
@@ -353,6 +364,14 @@ app.get('/api/events', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Serve index.html for all non-API routes (for client-side routing)
+if (isProduction || distExists) {
+  app.get('*', (req, res) => {
+    const staticDir = distExists ? 'dist' : 'public';
+    res.sendFile(path.join(__dirname, staticDir, 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);

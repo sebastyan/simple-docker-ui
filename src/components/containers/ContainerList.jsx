@@ -1,4 +1,4 @@
-import { Button } from '../common/Button';
+import { ContextMenu } from '../common/ContextMenu';
 
 export const ContainerList = ({
   containers,
@@ -36,6 +36,54 @@ export const ContainerList = ({
             ).join(', ') || 'None';
             const isRunning = status === 'running';
 
+            const menuItems = isRunning
+              ? [
+                  {
+                    label: 'Stop',
+                    icon: '◼',
+                    onClick: () => onStop(c.Id)
+                  },
+                  {
+                    label: 'Restart',
+                    icon: '↻',
+                    onClick: () => onRestart(c.Id)
+                  },
+                  {
+                    label: 'Shell',
+                    icon: '$',
+                    onClick: () => onShell(c.Id, name)
+                  },
+                  {
+                    label: 'Logs',
+                    icon: '≡',
+                    onClick: () => onLogs(c.Id)
+                  },
+                  {
+                    label: 'Stats',
+                    icon: '◐',
+                    onClick: () => onStats(c.Id)
+                  },
+                  {
+                    label: 'Remove',
+                    icon: '×',
+                    variant: 'danger',
+                    onClick: () => onRemove(c.Id)
+                  }
+                ]
+              : [
+                  {
+                    label: 'Start',
+                    icon: '▶',
+                    onClick: () => onStart(c.Id)
+                  },
+                  {
+                    label: 'Remove',
+                    icon: '×',
+                    variant: 'danger',
+                    onClick: () => onRemove(c.Id)
+                  }
+                ];
+
             return (
               <tr key={c.Id}>
                 <td><strong>{name}</strong></td>
@@ -46,18 +94,7 @@ export const ContainerList = ({
                 <td>{created}</td>
                 <td>
                   <div className="list-actions">
-                    {isRunning ? (
-                      <>
-                        <Button variant="stop" onClick={() => onStop(c.Id)}>Stop</Button>
-                        <Button variant="restart" onClick={() => onRestart(c.Id)}>Restart</Button>
-                        <Button variant="shell" onClick={() => onShell(c.Id, name)}>Shell</Button>
-                        <Button variant="logs" onClick={() => onLogs(c.Id)}>Logs</Button>
-                        <Button variant="stats" onClick={() => onStats(c.Id)}>Stats</Button>
-                      </>
-                    ) : (
-                      <Button variant="start" onClick={() => onStart(c.Id)}>Start</Button>
-                    )}
-                    <Button variant="remove" onClick={() => onRemove(c.Id)}>Remove</Button>
+                    <ContextMenu items={menuItems} />
                   </div>
                 </td>
               </tr>

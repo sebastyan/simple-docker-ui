@@ -17,6 +17,8 @@ export const Containers = ({
   const { containers, loading, refresh } = useContainers();
   const [search, setSearch] = useState('');
   const [view, setView] = useState('list');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   // Debug: Log whenever containers changes
   useEffect(() => {
     console.log('[Containers] Containers changed:', {
@@ -33,7 +35,14 @@ export const Containers = ({
 
   const filteredContainers = containers.filter((c) => {
     const name = c.Names[0].replace('/', '').toLowerCase();
-    return name.includes(search.toLowerCase());
+    const matchesSearch = name.includes(search.toLowerCase());
+
+    if (statusFilter === 'all') return matchesSearch;
+    if (statusFilter === 'running') return matchesSearch && c.State === 'running';
+    if (statusFilter === 'stopped') return matchesSearch && (c.State === 'exited' || c.State === 'created');
+    if (statusFilter === 'paused') return matchesSearch && c.State === 'paused';
+
+    return matchesSearch;
   });
 
   console.log('[Containers] Filtered:', filteredContainers.length, 'containers');
@@ -93,10 +102,6 @@ export const Containers = ({
     return <div className="loading">No containers found</div>;
   }
 
-  if (filteredContainers.length === 0) {
-    return <div className="loading">No containers match your search</div>;
-  }
-
   const containerProps = {
     onStart: handleStart,
     onStop: handleStop,
@@ -106,6 +111,17 @@ export const Containers = ({
     onStats,
     onShell,
   };
+
+  let emptyMessage = null;
+  if (filteredContainers.length === 0) {
+    if (search && statusFilter !== 'all') {
+      emptyMessage = `No ${statusFilter} containers match your search`;
+    } else if (search) {
+      emptyMessage = 'No containers match your search';
+    } else if (statusFilter !== 'all') {
+      emptyMessage = `No ${statusFilter} containers found`;
+    }
+  }
 
   return (
     <div className="tab-content active">
@@ -117,16 +133,38 @@ export const Containers = ({
             onChange={setSearch}
             placeholder="Search containers by name..."
           />
-          <div className="filters">
-            <label>
-              <input type="checkbox" defaultChecked />
-              Show all
-            </label>
+          <div className="status-filters">
+            <button
+              className={`filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={`filter-btn ${statusFilter === 'running' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('running')}
+            >
+              Running
+            </button>
+            <button
+              className={`filter-btn ${statusFilter === 'stopped' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('stopped')}
+            >
+              Stopped
+            </button>
+            <button
+              className={`filter-btn ${statusFilter === 'paused' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('paused')}
+            >
+              Paused
+            </button>
           </div>
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </div>
-      {view === 'cards' ? (
+      {emptyMessage ? (
+        <div className="loading">{emptyMessage}</div>
+      ) : view === 'cards' ? (
         <div className="cards-container">
           {filteredContainers.map((container) => (
             <ContainerCard

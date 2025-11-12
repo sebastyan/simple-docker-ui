@@ -1,4 +1,4 @@
-import { Button } from '../common/Button';
+import { ContextMenu } from '../common/ContextMenu';
 import { formatBytes } from '../../utils/api';
 
 export const ImageList = ({ images, onRun, onRemove }) => {
@@ -23,6 +23,20 @@ export const ImageList = ({ images, onRun, onRemove }) => {
             const created = new Date(img.Created * 1000).toLocaleString();
             const containerCount = img.ContainerCount || 0;
 
+            const menuItems = [
+              {
+                label: 'Run',
+                icon: '▶',
+                onClick: () => onRun(img.Id, tags)
+              },
+              {
+                label: 'Remove',
+                icon: '×',
+                variant: 'danger',
+                onClick: () => onRemove(img.Id)
+              }
+            ];
+
             return (
               <tr key={img.Id}>
                 <td><strong>{tags}</strong></td>
@@ -32,12 +46,7 @@ export const ImageList = ({ images, onRun, onRemove }) => {
                 <td>{containerCount}</td>
                 <td>
                   <div className="list-actions">
-                    <Button variant="run" onClick={() => onRun(img.Id, tags)}>
-                      Run
-                    </Button>
-                    <Button variant="remove" onClick={() => onRemove(img.Id)}>
-                      Remove
-                    </Button>
+                    <ContextMenu items={menuItems} />
                   </div>
                 </td>
               </tr>

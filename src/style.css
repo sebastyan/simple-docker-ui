@@ -248,6 +248,36 @@ header h1 {
     color: var(--text-secondary);
 }
 
+.status-filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-btn {
+    padding: 6px 16px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    color: #666666;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.filter-btn:hover {
+    background: #f5f5f5;
+    border-color: #d0d0d0;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border-color: #667eea;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
 .view-toggle {
     display: flex;
     gap: 5px;
@@ -371,6 +401,7 @@ header h1 {
     border-radius: 12px;
     padding: 20px;
     transition: all 0.3s;
+    overflow: visible;
 }
 
 .card:hover {
@@ -387,10 +418,19 @@ header h1 {
 }
 
 .card-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #374151;
     word-break: break-all;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    max-width: 100%;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .status {
@@ -418,6 +458,7 @@ header h1 {
 
 .card-info {
     margin-bottom: 15px;
+    overflow: hidden;
 }
 
 .info-row {
@@ -426,6 +467,8 @@ header h1 {
     padding: 8px 0;
     border-bottom: 1px solid var(--border-color);
     font-size: 13px;
+    gap: 10px;
+    overflow: hidden;
 }
 
 .info-label {
@@ -436,12 +479,17 @@ header h1 {
 .info-value {
     color: var(--text-primary);
     font-family: 'Courier New', monospace;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .card-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
 }
 
 .btn {
