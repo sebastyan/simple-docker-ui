@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Docker Manager</h1>
+            <div class="header-info">
+                <span id="system-info">Loading...</span>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
+                <button class="refresh-btn" onclick="refreshAll()">Refresh</button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('containers')">Containers</button>
+            <button class="tab-btn" onclick="showTab('images')">Images</button>
+            <button class="tab-btn" onclick="showTab('volumes')">Volumes</button>
+        </div>
+
+        <!-- Containers Tab -->
+        <div id="containers-tab" class="tab-content active">
+            <div class="section-header">
+                <h2>Containers</h2>
+                <div class="section-controls">
+                    <input type="text" id="search-containers" class="search-input" placeholder="Search containers by name..." oninput="filterContainers()">
+                    <div class="filters">
+                        <label>
+                            <input type="checkbox" id="show-all" checked onchange="loadContainers()">
+                            Show all
+                        </label>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('containers', 'cards')" title="Card View">
+                            <span>⊞</span>
+                        </button>
+                        <button class="view-btn" onclick="setView('containers', 'list')" title="List View">
+                            <span>☰</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="containers-list" class="cards-container">
+                <div class="loading">Loading containers...</div>
+            </div>
+        </div>
+
+        <!-- Images Tab -->
+        <div id="images-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Images</h2>
+                <div class="section-controls">
+                    <input type="text" id="search-images" class="search-input" placeholder="Search images by name..." oninput="filterImages()">
+                    <div class="pull-image">
+                        <input type="text" id="image-name" placeholder="Enter image name (e.g., nginx:latest)">
+                        <button onclick="pullImage()">Pull Image</button>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('images', 'cards')" title="Card View">
+                            <span>⊞</span>
+                        </button>
+                        <button class="view-btn" onclick="setView('images', 'list')" title="List View">
+                            <span>☰</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="images-list" class="cards-container">
+                <div class="loading">Loading images...</div>
+            </div>
+        </div>
+
+        <!-- Volumes Tab -->
+        <div id="volumes-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Volumes</h2>
+                <div class="section-controls">
+                    <input type="text" id="search-volumes" class="search-input" placeholder="Search volumes by name..." oninput="filterVolumes()">
+                    <button class="btn btn-primary" onclick="showCreateVolumeModal()">Create Volume</button>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('volumes', 'cards')" title="Card View">
+                            <span>⊞</span>
+                        </button>
+                        <button class="view-btn" onclick="setView('volumes', 'list')" title="List View">
+                            <span>☰</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="volumes-list" class="cards-container">
+                <div class="loading">Loading volumes...</div>
+            </div>
+        </div>
+
+        <!-- Modal for logs -->
+        <div id="logs-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Container Logs</h3>
+                    <button class="close-btn" onclick="closeLogsModal()">&times;</button>
+                </div>
+                <pre id="logs-content"></pre>
+            </div>
+        </div>
+
+        <!-- Modal for stats -->
+        <div id="stats-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Container Stats</h3>
+                    <button class="close-btn" onclick="closeStatsModal()">&times;</button>
+                </div>
+                <div id="stats-content"></div>
+            </div>
+        </div>
+
+        <!-- Modal for creating container -->
+        <div id="create-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Run Container</h3>
+                    <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+                </div>
+                <div class="create-form">
+                    <input type="hidden" id="create-image" />
+
+                    <div class="form-group">
+                        <label>Image:</label>
+                        <input type="text" id="create-image-display" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Container Name (optional):</label>
+                        <input type="text" id="create-name" placeholder="my-container" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Port Mappings (one per line):</label>
+                        <textarea id="create-ports" placeholder="8080:80&#10;3000:3000" rows="3"></textarea>
+                        <small>Format: host_port:container_port</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Environment Variables (one per line):</label>
+                        <textarea id="create-env" placeholder="NODE_ENV=production&#10;PORT=3000" rows="3"></textarea>
+                        <small>Format: KEY=VALUE</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Volume Mounts (one per line):</label>
+                        <textarea id="create-volumes" placeholder="/host/path:/container/path" rows="3"></textarea>
+                        <small>Format: host_path:container_path</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="createContainer()">Create & Run</button>
+                        <button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for creating volume -->
+        <div id="create-volume-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Create Volume</h3>
+                    <button class="close-btn" onclick="closeCreateVolumeModal()">&times;</button>
+                </div>
+                <div class="create-form">
+                    <div class="form-group">
+                        <label>Volume Name (optional):</label>
+                        <input type="text" id="volume-name" placeholder="my-volume" />
+                        <small>Leave empty for auto-generated name</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Driver:</label>
+                        <input type="text" id="volume-driver" value="local" />
+                        <small>Default: local</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="createVolume()">Create Volume</button>
+                        <button class="btn btn-secondary" onclick="closeCreateVolumeModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for volume inspect -->
+        <div id="volume-inspect-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Volume Details</h3>
+                    <button class="close-btn" onclick="closeVolumeInspectModal()">&times;</button>
+                </div>
+                <div id="volume-inspect-content" class="create-form"></div>
+            </div>
+        </div>
+
+        <!-- Modal for terminal -->
+        <div id="terminal-modal" class="modal">
+            <div class="modal-content terminal-modal-content">
+                <div class="modal-header">
+                    <h3>Container Shell</h3>
+                    <button class="close-btn" onclick="closeTerminal()">&times;</button>
+                </div>
+                <div id="terminal-container"></div>
+            </div>
+        </div>
+
+        <!-- Modal for image pull progress -->
+        <div id="pull-progress-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Pulling Image</h3>
+                    <button class="close-btn" onclick="closePullProgressModal()">&times;</button>
+                </div>
+                <div id="pull-progress-content" class="pull-progress-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
